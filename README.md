@@ -126,6 +126,23 @@ python single_image_inference.py
 json file containing probabilistic detections. `model-ckpt` is the path to the model checkpoint to be used for 
 inference. Look below to download model checkpoints.
 
+## Visualization of images
+Script to visualize the probabilistic outputs computed by the model.
+
+```
+python visualization/visualize_predictions_inference.py 
+--inference-config /path/to/inference/config
+--config-file /path/to/config/file
+--image-dir /path/to/image/dir
+--output-dir /path/to/output/dir
+--test-dataset test-dataset
+--min-allowed-score between-0-1
+```
+
+`image-dir` is a folder containing all images used for inference. `output-dir` is a folder to write the output 
+file containing filtered detections by `min-allowed-score`. `test-dataset` can be 'coco_2017_custom_val' if the test data
+has the same labels as the coco dataset.
+
 ## Configurations in the paper
 We provide a list of config combinations that generate the architectures used in our paper:
 
