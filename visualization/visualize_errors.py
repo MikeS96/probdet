@@ -2,6 +2,11 @@ import cv2
 import numpy as np
 import os
 import ujson as json
+import core
+import sys
+
+# This is very ugly. Essential for now but should be fixed.
+sys.path.append(os.path.join(core.top_dir(), 'src', 'detr'))
 
 # Detectron imports
 from detectron2.data import MetadataCatalog
