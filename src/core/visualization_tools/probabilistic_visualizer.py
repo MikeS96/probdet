@@ -20,13 +20,14 @@ class ProbabilisticVisualizer(Visualizer):
         super().__init__(img_rgb, metadata, scale=scale, instance_mode=instance_mode)
 
     def overlay_covariance_instances(
-        self,
-        *,
-        boxes=None,
-        covariance_matrices=None,
-        labels=None,
-        assigned_colors=None,
-        alpha=0.5
+            self,
+            *,
+            boxes=None,
+            covariance_matrices=None,
+            labels=None,
+            assigned_colors=None,
+            alpha=0.5,
+            obj_key=None
     ):
         """
         Args:
@@ -72,6 +73,8 @@ class ProbabilisticVisualizer(Visualizer):
             boxes = boxes[sorted_idxs] if boxes is not None else None
             labels = [labels[k]
                       for k in sorted_idxs] if labels is not None else None
+            obj_key = [obj_key[k]
+                       for k in sorted_idxs] if obj_key is not None else None
             assigned_colors = [assigned_colors[idx] for idx in sorted_idxs]
 
         for i in range(num_instances):
@@ -106,16 +109,16 @@ class ProbabilisticVisualizer(Visualizer):
                         text_pos = (x0, y1)
 
                 height_ratio = (y1 - y0) / \
-                    np.sqrt(self.output.height * self.output.width)
+                               np.sqrt(self.output.height * self.output.width)
                 lighter_color = self._change_color_brightness(
                     color, brightness_factor=0.7)
                 font_size = (
-                    np.clip((height_ratio - 0.02) / 0.08 + 1, 1.2, 2)
-                    * 0.5
-                    * self._default_font_size
+                        np.clip((height_ratio - 0.02) / 0.08 + 1, 1.2, 2)
+                        * 0.5
+                        * self._default_font_size
                 )
                 self.draw_text(
-                    labels[i],
+                    '{} ({})'.format(labels[i], obj_key[i]) if obj_key is not None else labels[i],
                     text_pos,
                     color=lighter_color,
                     horizontal_alignment=horiz_align,
@@ -195,14 +198,14 @@ class ProbabilisticVisualizer(Visualizer):
         return self.output
 
     def overlay_instances(
-        self,
-        *,
-        boxes=None,
-        labels=None,
-        masks=None,
-        keypoints=None,
-        assigned_colors=None,
-        alpha=0.5
+            self,
+            *,
+            boxes=None,
+            labels=None,
+            masks=None,
+            keypoints=None,
+            assigned_colors=None,
+            alpha=0.5
     ):
         """
         Modified from super class to give access to alpha for box plotting.
@@ -296,13 +299,13 @@ class ProbabilisticVisualizer(Visualizer):
                         text_pos = (x0, y1)
 
                 height_ratio = (y1 - y0) / \
-                    np.sqrt(self.output.height * self.output.width)
+                               np.sqrt(self.output.height * self.output.width)
                 lighter_color = self._change_color_brightness(
                     color, brightness_factor=0.7)
                 font_size = (
-                    np.clip((height_ratio - 0.02) / 0.08 + 1, 1.2, 2)
-                    * 0.5
-                    * self._default_font_size
+                        np.clip((height_ratio - 0.02) / 0.08 + 1, 1.2, 2)
+                        * 0.5
+                        * self._default_font_size
                 )
                 self.draw_text(
                     labels[i],

@@ -100,12 +100,20 @@ def main(
             predicted_classes = np.array([])
             assigned_colors = []
 
+        # Exception to plot both instances with keys and without key
+        try:
+            predicted_instance_key = preprocessed_predicted_instances['predicted_instance_key'][image_id].cpu().numpy()
+        except KeyError:
+            predicted_instance_key = None
+
         plotted_detections = v.overlay_covariance_instances(
             boxes=predicted_box_means,
             covariance_matrices=predicted_box_covariances,
             assigned_colors=assigned_colors,
             alpha=1.0,
-            labels=predicted_classes)
+            labels=predicted_classes,
+            obj_key=predicted_instance_key)
+
         cv2.imshow(
             'Detected Instances.',
             cv2.cvtColor(
