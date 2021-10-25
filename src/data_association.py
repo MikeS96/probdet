@@ -25,14 +25,21 @@ def main(args):
     # Path to Ground truth and predicted instances
     path_gt = args.image_dir
     path_instances = os.path.join(args.output_dir, 'preprocessed_predicted_instances_0.3.pth')
+    # path_gt = '/home/sherlock/Desktop/ML/slam/data_process_slam/output'
+    # path_instances = os.path.join(
+    #     '/home/sherlock/Desktop/ML/slam/data_process_slam/rgbd_dataset_freiburg3_long_office_household/tum_outputs',
+    #     'preprocessed_predicted_instances_0.3.pth')
+    # Set min allowed threshold
+    min_iou = args.min_allowed_score
+
     # Load predicted instances
     predicted_instances = torch.load(path_instances)
 
     # Dictionaries to store new data
-    predicted_boxes, predicted_cls_probs, predicted_covar_mats, instance_key, cam_pose, = defaultdict(
+    predicted_boxes, predicted_cls_probs, predicted_covar_mats, instance_key, cam_pose, image_key = defaultdict(
         torch.Tensor), defaultdict(torch.Tensor), defaultdict(
         torch.Tensor), defaultdict(torch.Tensor), defaultdict(
-        torch.Tensor)
+        torch.Tensor), defaultdict(torch.Tensor)
 
     print('Starting IoU matching...')
     for image_id in predicted_instances['predicted_boxes']:
@@ -51,11 +58,14 @@ def main(args):
         gt_box_mean = np.array(gt_bbox['bbox'], dtype=np.float32)
         gt_object_key = np.array(gt_bbox['object_key'], dtype=np.float32)
         gt_pose = np.array(gt_bbox['pose'], dtype=np.float32)
+        gt_object_class = np.array(gt_bbox['label'], dtype=np.int16)
+        gt_image_key = gt_bbox['image_key']
 
         # Predicted instance data
         predicted_box_means = predicted_instances['predicted_boxes'][image_id].cpu().numpy()
         predicted_box_covariances = predicted_instances['predicted_covar_mats'][image_id].cpu().numpy()
         predicted_clas_probs = predicted_instances['predicted_cls_probs'][image_id].cpu().numpy()
+        predicted_clas = np.argmax(predicted_clas_probs, axis=1)
 
         # Compute iou between gt boxes and all predicted boxes in frame
         frame_gt_boxes = Boxes(gt_box_mean)
@@ -65,10 +75,14 @@ def main(args):
 
         # Match GT and predicted boxes
         matched_instance = torch.argmax(match_iou, dim=1)
+        # Flag to prevent populating empty dicts
+        populated = False
 
         # Loop over instances
         for gt_idx, match in enumerate(matched_instance):
-            if match_iou[gt_idx][match] > 0:
+            # IoU > min_iou and class label has to match
+            if match_iou[gt_idx][match] >= min_iou and gt_object_class[gt_idx] == predicted_clas[match]:
+                populated = True
                 # Storing bbox
                 predicted_boxes[image_id] = torch.cat((predicted_boxes[image_id].to(device),
                                                        torch.as_tensor([predicted_box_means[match]],
@@ -85,16 +99,22 @@ def main(args):
                 instance_key[image_id] = torch.cat((instance_key[image_id].to(device),
                                                     torch.as_tensor([gt_object_key[gt_idx]],
                                                                     dtype=torch.float32).to(device)))
-                # Storing tracking key
-                cam_pose[image_id] = torch.cat((cam_pose[image_id].to(device),
-                                                torch.as_tensor([gt_pose],
-                                                                dtype=torch.float32).to(device)))
+        if populated:
+            # Storing tracking key
+            cam_pose[image_id] = torch.cat((cam_pose[image_id].to(device),
+                                            torch.as_tensor([gt_pose],
+                                                            dtype=torch.float32).to(device)))
+            # Storing image key
+            image_key[image_id] = torch.cat((image_key[image_id].to(device),
+                                             torch.as_tensor([gt_image_key],
+                                                             dtype=torch.int16).to(device)))
 
     processed_instances = dict({'predicted_boxes': predicted_boxes,
                                 'predicted_cls_probs': predicted_cls_probs,
                                 'predicted_covar_mats': predicted_covar_mats,
                                 'predicted_instance_key': instance_key,
-                                'camera_pose': cam_pose})
+                                'camera_pose': cam_pose,
+                                'image_keys': image_key})
 
     torch.save(processed_instances, os.path.join(args.output_dir, "preprocessed_predicted_instances_key.pth"))
     print('Done!')
