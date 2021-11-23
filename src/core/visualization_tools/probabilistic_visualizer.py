@@ -66,17 +66,16 @@ class ProbabilisticVisualizer(Visualizer):
         areas = None
         if boxes is not None:
             areas = np.prod(boxes[:, 2:] - boxes[:, :2], axis=1)
-
         if areas is not None:
             sorted_idxs = np.argsort(-areas).tolist()
             # Re-order overlapped instances in descending order.
             boxes = boxes[sorted_idxs] if boxes is not None else None
+            covariance_matrices = covariance_matrices[sorted_idxs] if covariance_matrices is not None else None
             labels = [labels[k]
                       for k in sorted_idxs] if labels is not None else None
             obj_key = [obj_key[k]
                        for k in sorted_idxs] if obj_key is not None else None
             assigned_colors = [assigned_colors[idx] for idx in sorted_idxs]
-
         for i in range(num_instances):
             color = assigned_colors[i]
             if boxes is not None:

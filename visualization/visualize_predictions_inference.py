@@ -42,6 +42,7 @@ def main(
 
     # get metacatalog and image infos
     meta_catalog = MetadataCatalog.get(args.test_dataset)
+    print(meta_catalog)
     # Read all images and sort them
     image_folder = os.path.expanduser(args.image_dir)
     images_list = os.listdir(image_folder)
@@ -113,15 +114,15 @@ def main(
             alpha=1.0,
             labels=predicted_classes,
             obj_key=predicted_instance_key)
-        # cv2.imwrite('/home/sherlock/Desktop/ML/slam/data_process_slam/img_iou_filtered_1/{}'.format(image_id), cv2.cvtColor(
+        # cv2.imwrite('/home/sherlock/Desktop/ML/slam/data_process_slam/detr_nll/{}'.format(image_id), cv2.cvtColor(
         #         plotted_detections.get_image(),
         #         cv2.COLOR_RGB2BGR))
-        cv2.imshow(
-            'Detected Instances.',
-            cv2.cvtColor(
-                plotted_detections.get_image(),
-                cv2.COLOR_RGB2BGR))
-        cv2.waitKey()
+        # cv2.imshow(
+        #     'Detected Instances.',
+        #     cv2.cvtColor(
+        #         plotted_detections.get_image(),
+        #         cv2.COLOR_RGB2BGR))
+        # cv2.waitKey()
 
 
 if __name__ == "__main__":
