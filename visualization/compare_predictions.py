@@ -119,7 +119,7 @@ def main(args, cfg=None):
                                                             obj_key=predicted_instance_key)
         # cv2.imwrite('/home/sherlock/Desktop/ML/slam/data_process_slam/imgs_en_vs_nll/{}'.format(image_id), cv2.cvtColor(
         #         plotted_detections.get_image(),
-                cv2.COLOR_RGB2BGR))
+        #         cv2.COLOR_RGB2BGR))
         cv2.imshow(
             'Detected Instances.',
             cv2.cvtColor(
